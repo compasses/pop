@@ -20,9 +20,9 @@ class DefaultsMixin(object):
     paginate_by_param = 'page_size'
     max_paginate_by = 100
 
-class SprintViewSet(viewsets.ModelViewSet):
+class SprintViewSet(DefaultsMixin, viewsets.ModelViewSet):
     """ API endpoint for listing and creating sprints """
-    quertset = Sprint.objects.order_by('end')
+    queryset = Sprint.objects.order_by('end')
     serializer_class = SprintSerializer
 
 class TaskViewSet(DefaultsMixin, viewsets.ModelViewSet):

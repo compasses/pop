@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'^api/token/', obtain_auth_token, name='api-token'),
     url(r'^api/', include(router.urls)),
     url(r'^$', TemplateView.as_view(template_name='board/index.html')),
+    url(r'^angular/', TemplateView.as_view(template_name='angular/angular.html')),
 ]

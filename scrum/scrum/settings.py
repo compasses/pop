@@ -42,6 +42,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     #Internal apps
     'board',
+    'angular',
 )
 
 MIDDLEWARE_CLASSES = (

@@ -4,5 +4,6 @@ var app = (function($) {
   $(document).ready(function() {
     var router = new app.router();
   });
+  console.log("start return app!");
   return app;
 })(jQuery);

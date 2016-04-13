@@ -5,7 +5,7 @@
       this.template = _.template($(this.templateName).html());
     },
     render: function() {
-      console.log("going to render....");
+      console.log("going to render....", this.templateName);
       var context = this.getContext(),
         html = this.template(context);
       this.$el.html(html);
@@ -101,7 +101,7 @@
       TemplateView.prototype.initialize.apply(this, arguments);
       app.collections.ready.done(function() {
         var end = new Date();
-        end.setDate(end.getDate() - 7);
+        end.setDate(end.getDate() + 7200);
         end = end.toISOString().replace(/T.*/g, '');
         app.sprints.fetch({
           data: {
@@ -164,6 +164,25 @@
       window.location = '/';
     }
   });
+
+  var StatusView = TemplateView.extend({
+    tagName: 'section',
+    className: 'status',
+    templateName: '#status-template',
+    initialize: function(options) {
+      TemplateView.prototype.initialize.apply(this, arguments);
+      this.sprint = options.sprint;
+      this.status = options.status;
+      this.title = options.title;
+    },
+    getContext: function() {
+      return {
+        sprint: this.sprint,
+        title: this.title
+      };
+    }
+  });
+
   var SprintView = TemplateView.extend({
     templateName: '#sprint-template',
     initialize: function(options) {
@@ -171,14 +190,43 @@
       TemplateView.prototype.initialize.apply(this, arguments);
       this.sprintId = options.sprintId;
       this.sprint = null;
+      this.statuses = {
+        unassigned: new StatusView({
+          sprint: null,
+          status: 1,
+          title: 'Backlog'
+        }),
+        todo: new StatusView({
+          sprint: this.sprintId,
+          status: 1,
+          title: 'Not Started'
+        }),
+        active: new StatusView({
+          sprint: this.sprintId,
+          status: 2,
+          title: 'In Development'
+        }),
+        testing: new StatusView({
+          sprint: this.sprintId,
+          status: 3,
+          title: 'In Testing'
+        }),
+        done: new StatusView({
+          sprint: this.sprintId,
+          status: 4,
+          title: 'Completed'
+        })
+      };
       app.collections.ready.done(function() {
-        self.sprint = app.sprints.push({
-          id: self.sprintId
-        });
-        self.sprint.fetch({
-          success: function() {
-            self.render();
-          }
+        app.sprints.getOrFetch(self.sprintId).done(function(sprint) {
+          console.log("Yes, got sprint...", sprint);
+          self.sprint = sprint;
+          self.render();
+        }).fail(function(sprint) {
+          console.log("Nop, got sprint...", sprint);
+          self.sprint = sprint;
+          self.sprint.invalid = true;
+          self.render();
         });
       });
     },
@@ -186,6 +234,14 @@
       return {
         sprint: this.sprint
       };
+    },
+    render: function() {
+      TemplateView.prototype.render.apply(this, arguments);
+      _.each(this.statuses, function(view, name) {
+        $('.tasks', this.$el).append(view.el);
+        view.delegateEvents();
+        view.render();
+      }, this);
     }
   });
 

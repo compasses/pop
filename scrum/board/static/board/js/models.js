@@ -39,6 +39,7 @@
       token: null
     },
     initialize: function(options) {
+      console.log("in session", this);
       this.options = options;
       $.ajaxPrefilter($.proxy(this._setupAuth, this));
       this.load();
@@ -67,7 +68,7 @@
       if (this.authenticated()) {
         xhr.setRequestHeader(
           'Authorization',
-          'Token' + this.get('token')
+          'Token ' + this.get('token')
         );
       }
     }
@@ -93,6 +94,26 @@
       this._previous = response.previous;
       this._count = response.count;
       return response.results || [];
+    },
+    getOrFetch: function(id) {
+      var result = new $.Deferred(),
+        model = this.get(id);
+      if (!model) {
+        model = this.push({
+          id: id
+        });
+        model.fetch({
+          success: function(model, response, options) {
+            result.resolve(model);
+          },
+          error: function(model, response, options) {
+            result.reject(model, response);
+          }
+        });
+      } else {
+        result.resolve(model);
+      }
+      return result;
     }
   });
 
